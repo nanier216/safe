@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import RoomScene from "@/components/room-scene";
+import { samplePins, type Pin, type Priority } from "@/lib/mock-pins";
+
+const priorityDot: Record<Priority, string> = {
+  High: "bg-[#d2604f]",
+  Medium: "bg-[#d9a441]",
+  Low: "bg-[#6a93b8]",
+};
 
 type Task = {
   id: string;
@@ -44,6 +51,11 @@ export default function Home() {
   const [tab, setTab] = useState<"checklist" | "activity">("checklist");
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [feed, setFeed] = useState<FeedItem[]>(initialFeed);
+  const [pins] = useState<Pin[]>(samplePins);
+  const [activePinId, setActivePinId] = useState<string | null>(null);
+
+  const activePin = pins.find((p) => p.id === activePinId) ?? null;
+  const openPins = pins.filter((p) => p.status !== "Fixed").length;
 
   const who = nickname.trim() || "Someone";
   const doneCount = tasks.filter((t) => t.done).length;
@@ -103,11 +115,82 @@ export default function Home() {
             <span className="h-2 w-2 rounded-full bg-accent" />
             {doneCount} of {tasks.length} done today
           </div>
+          {pins.map((pin) => (
+            <button
+              key={pin.id}
+              type="button"
+              aria-label={`${pin.hazard} pin, ${pin.priority} priority, ${
+                pin.status === "Claimed"
+                  ? `claimed by ${pin.claimedBy}`
+                  : pin.status.toLowerCase()
+              }`}
+              onClick={() =>
+                setActivePinId((id) => (id === pin.id ? null : pin.id))
+              }
+              style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
+              className={`absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full shadow-md ring-2 ring-surface transition active:scale-90 ${
+                pin.status === "Fixed" ? "bg-accent" : priorityDot[pin.priority]
+              } ${pin.status === "Open" && pin.priority === "High" ? "animate-pulse" : ""}`}
+            >
+              {pin.status === "Fixed" && (
+                <svg viewBox="0 0 12 12" className="h-4 w-4 text-surface" fill="none">
+                  <path
+                    d="M2.5 6.5l2.5 2.5 4.5-5.5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </button>
+          ))}
+          {activePin && (
+            <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-surface/95 p-3 shadow-lg ring-1 ring-line backdrop-blur">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-bold text-white ${priorityDot[activePin.priority]}`}
+                >
+                  {activePin.priority}
+                </span>
+                <span className="flex-1 text-sm font-bold">{activePin.hazard}</span>
+                <button
+                  type="button"
+                  aria-label="Close pin details"
+                  onClick={() => setActivePinId(null)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-background text-muted transition active:scale-90"
+                >
+                  <svg viewBox="0 0 12 12" className="h-4 w-4" fill="none">
+                    <path
+                      d="M3 3l6 6M9 3l-6 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <p className="mt-1.5 text-sm leading-5 text-muted">{activePin.fix}</p>
+              <p className="mt-1 text-xs font-semibold">
+                {activePin.status === "Claimed" ? (
+                  <span className="text-accent">Claimed by {activePin.claimedBy}</span>
+                ) : activePin.status === "Fixed" ? (
+                  <span className="text-accent">Fixed</span>
+                ) : (
+                  <span className="text-muted">Open — waiting for a volunteer</span>
+                )}
+              </p>
+            </div>
+          )}
         </section>
         <p className="px-1 pb-4 pt-3 text-sm text-muted">
           {nickname.trim()
-            ? `Good to see you, ${nickname.trim()}. Tap a task below to pitch in.`
-            : "Add your nickname, then tap a task below to pitch in."}
+            ? `Good to see you, ${nickname.trim()}. ${
+                openPins > 0
+                  ? `${openPins} pin${openPins === 1 ? "" : "s"} marked on the map — tap one for the fix.`
+                  : "All clear — no open pins on the map."
+              }`
+            : "Add your nickname, then tap a pin on the map to see the fix."}
         </p>
       </main>
 
