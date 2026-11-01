@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f3ec;
+  --surface: #ffffff;
+  --ink: #2a2723;
+  --muted: #8a8378;
+  --line: rgba(42, 39, 35, 0.08);
+  --accent: #3e7c5b;
+  --accent-strong: #2f6a4b;
+  --accent-soft: #e9f1ea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #14160f;
+    --surface: #1d201a;
+    --ink: #ece9e1;
+    --muted: #9a967f;
+    --line: rgba(236, 233, 225, 0.1);
+    --accent: #7cba97;
+    --accent-strong: #93cdaa;
+    --accent-soft: #26332a;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+.scroll-area {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
